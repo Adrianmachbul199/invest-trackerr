@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#090d0c"><title>Invest Tracker</title>
+<style>
+:root{--bg:#090d0c;--panel:#111917;--panel2:#17211d;--line:#25342d;--text:#eff8f1;--muted:#91a49a;--green:#21c77a;--gold:#d9b45b;--red:#f07171}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif;padding:18px 15px 90px}
+header{display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px}.brand{font-size:21px;font-weight:850;letter-spacing:.3px}.brand span{color:var(--gold)}.tag{font-size:10px;color:var(--green);border:1px solid #20583e;padding:6px 9px;border-radius:20px}
+.card{background:linear-gradient(145deg,#14201a,#101613);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px #0003}
+.eyebrow,.muted{color:var(--muted);font-size:12px}.value{font-size:29px;font-weight:800;letter-spacing:-1px;margin:5px 0 12px}.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{background:var(--panel2);border-radius:13px;padding:12px}.mini strong{display:block;font-size:17px;margin-top:5px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:3}
+nav button,.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:11px 5px;font-weight:700;font-size:12px}
+nav button.active,.btn.primary{background:var(--green);color:#06130c;border-color:var(--green)}
+h3{font-size:15px;margin:2px 0 12px}.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
+.bar{height:7px;background:#25342d;border-radius:8px;overflow:hidden;margin-top:7px}.bar i{display:block;height:100%;border-radius:8px}
+input,select{width:100%;background:#0b120f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px;margin:5px 0 12px;min-height:44px}
+label{font-size:12px;color:var(--muted)}.btn{width:100%;margin-top:8px;padding:13px}.btn.danger{color:var(--red)}
+.page{display:none}.page.active{display:block}.small{font-size:11px;color:var(--muted)}
+table{width:100%;font-size:12px;border-collapse:collapse}td,th{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}
+canvas{width:100%;height:160px}.pill{font-size:11px;border-radius:20px;background:#1a2c22;padding:5px 8px;color:var(--green)}
+</style></head><body>
+<header><div><div class="brand">INVEST <span>TRACKER</span></div><div class="muted">Personal wealth dashboard</div></div><div class="tag">DARK PREMIUM</div></header>
+<div class="card"><div class="eyebrow">TOTAL NILAI PORTOFOLIO</div><div class="value" id="total">Rp0</div><div class="grid"><div><div class="muted">Total modal</div><b id="capital">Rp0</b></div><div><div class="muted">Untung / rugi</div><b id="profit">Rp0</b></div></div><div class="small" id="roi" style="margin-top:12px">Mulai catat transaksi pertama Anda</div></div>
+<div class="grid"><div class="mini"><div class="muted">Target setoran rata-rata</div><strong id="targetView">Rp3.500.000</strong></div><div class="mini"><div class="muted">Jumlah transaksi</div><strong id="txCount">0</strong></div></div>
+<nav><button class="active" data-page="home">Ringkasan</button><button data-page="buy">Pembelian</button><button data-page="price">Harga</button><button data-page="report">Laporan</button></nav>
+<section id="home" class="page active">
+<div class="card"><h3>Alokasi portofolio</h3><div id="alloc"></div></div>
+<div class="card"><h3>Grafik perkembangan modal</h3><canvas id="chart" width="600" height="260"></canvas><div class="small">Grafik berdasarkan akumulasi modal pembelian, bukan harga pasar historis.</div></div>
+<div class="card"><h3>Rincian aset</h3><div id="assets"></div></div>
+<div class="card"><h3>Rencana setoran fleksibel</h3><label>Nominal setoran bulan ini (Rp)</label><input id="targetInput" type="number" value="3500000" min="0"><div id="plan"></div><button class="btn primary" id="saveTarget">Simpan target</button></div>
+</section>
+<section id="buy" class="page"><div class="card"><h3>Catat pembelian</h3><label>Tanggal</label><input id="date" type="date"><label>Aset</label><select id="asset"><option>BTC</option><option>VRT</option><option>KO</option><option>RDPU</option></select><label>Total modal pembelian (Rp, termasuk biaya jika ingin)</label><input id="amount" type="number" placeholder="Contoh: 875000" min="1"><label>Harga beli per unit (Rp)</label><input id="unitPrice" type="number" placeholder="Masukkan harga dalam rupiah" min="0" step="any"><div class="mini"><div class="muted">Estimasi unit diterima</div><strong id="preview">0</strong></div><button class="btn primary" id="add">Simpan transaksi</button><p class="small">Untuk VRT dan KO, konversikan harga USD ke rupiah menggunakan kurs dan harga transaksi yang tercatat di broker.</p></div><div class="card"><h3>Riwayat pembelian</h3><div id="transactions"></div></div></section>
+<section id="price" class="page"><div class="card"><h3>Perbarui harga pasar</h3><p class="small">Isi harga terbaru per unit dalam rupiah. Harga tidak diambil otomatis dari broker.</p><div id="priceFields"></div><button class="btn primary" id="savePrices">Simpan harga pasar</button></div></section>
+<section id="report" class="page"><div class="card"><h3>Laporan bulanan</h3><label>Pilih bulan</label><input type="month" id="month"><div id="monthly"></div></div><div class="card"><h3>Akumulasi investasi</h3><div id="cumulative"></div></div><div class="card"><h3>Data & cadangan</h3><button class="btn" id="csv">Unduh laporan CSV</button><button class="btn" id="backup">Cadangkan data JSON</button><label>Pulihkan cadangan JSON</label><input type="file" id="restore" accept=".json,application/json"><button class="btn danger" id="clear">Hapus seluruh data</button></div></section>
+<div class="small" style="text-align:center;margin:20px 4px">INVEST TRACKER · Data tersimpan lokal di perangkat ini. Buat cadangan secara berkala.</div>
+<script>
+const A=['BTC','VRT','KO','RDPU'],P={BTC:35,VRT:25,KO:20,RDPU:20},C={BTC:'#e2a53d',VRT:'#4d9de0',KO:'#e36b72',RDPU:'#2ac58a'};
+let S={target:3500000,prices:{BTC:0,VRT:0,KO:0,RDPU:0},tx:[]};
+try{let x=JSON.parse(localStorage.getItem('it_data')||'null');if(x&&Array.isArray(x.tx))S={...S,...x}}catch(e){}
+const $=id=>document.getElementById(id),n=x=>Number(x)||0,fmt=x=>'Rp'+Math.round(n(x)).toLocaleString('id-ID'),units=a=>S.tx.filter(t=>t.a===a).reduce((s,t)=>s+t.u,0),cost=a=>S.tx.filter(t=>t.a===a).reduce((s,t)=>s+t.v,0),val=a=>units(a)*n(S.prices[a]),totalCost=()=>A.reduce((s,a)=>s+cost(a),0),totalVal=()=>A.reduce((s,a)=>s+val(a),0),save=()=>localStorage.setItem('it_data',JSON.stringify(S));
+function render(){
+ let cap=totalCost(),v=totalVal(),p=v-cap;$('total').textContent=fmt(v);$('capital').textContent=fmt(cap);$('profit').textContent=(p>=0?'+':'')+fmt(p);$('profit').className=p>=0?'green':'red';$('roi').textContent=cap?((p/cap)*100).toFixed(2)+'% perubahan dari modal · harga pasar terakhir yang Anda masukkan':'Harga pasar belum diisi';$('targetView').textContent=fmt(S.target);$('txCount').textContent=S.tx.length;$('targetInput').value=S.target;
+ $('alloc').innerHTML=A.map(a=>`<div class="row"><div style="flex:1"><b>${a}</b><div class="bar"><i style="width:${P[a]}%;background:${C[a]}"></i></div><div class="small">${fmt(cost(a))} modal</div></div><div style="text-align:right"><b>${P[a]}%</b><div class="small">${fmt(S.target*P[a]/100)}</div></div></div>`).join('');
+ $('plan').innerHTML=A.map(a=>`<div class="row"><span>${a} · ${P[a]}%</span><b>${fmt(S.target*P[a]/100)}</b></div>`).join('');
+ $('assets').innerHTML=A.map(a=>{let pr=val(a)-cost(a);return `<div class="row"><div><b>${a}</b><div class="small">${units(a).toLocaleString('id-ID',{maximumFractionDigits:9})} unit</div></div><div style="text-align:right"><b>${fmt(val(a))}</b><div class="small ${pr>=0?'green':'red'}">${pr>=0?'+':''}${fmt(pr)}</div></div></div>`}).join('');
+ $('priceFields').innerHTML=A.map(a=>`<label>${a} · harga pasar per unit (Rp)</label><input data-price="${a}" type="number" min="0" step="any" value="${S.prices[a]||''}" placeholder="Masukkan harga terkini">`).join('');
+ $('transactions').innerHTML=S.tx.length?`<table><tr><th>Tanggal</th><th>Aset</th><th>Modal</th><th>Unit</th><th></th></tr>${[...S.tx].reverse().map(t=>`<tr><td>${t.d}</td><td>${t.a}</td><td>${fmt(t.v)}</td><td>${t.u.toLocaleString('id-ID',{maximumFractionDigits:7})}</td><td><button onclick="delTx('${t.id}')" style="padding:5px;background:#342020;color:#ffaaaa">×</button></td></tr>`).join('')}</table>`:'<p class="small">Belum ada pembelian.</p>';
+ report();draw();
+}
+function report(){let m=$('month').value||new Date().toISOString().slice(0,7),tx=S.tx.filter(t=>t.d.slice(0,7)===m),tot=tx.reduce((s,t)=>s+t.v,0);$('monthly').innerHTML=A.map(a=>`<div class="row"><span>${a} (${tx.filter(t=>t.a===a).length} transaksi)</span><b>${fmt(tx.filter(t=>t.a===a).reduce((s,t)=>s+t.v,0))}</b></div>`).join('')+`<div class="row"><b>Total bulan ini</b><b class="gold">${fmt(tot)}</b></div>`;$('cumulative').innerHTML=A.map(a=>`<div class="row"><span>${a} · ${units(a).toLocaleString('id-ID',{maximumFractionDigits:8})} unit</span><b>${fmt(cost(a))}</b></div>`).join('')}
+function draw(){let c=$('chart'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);let months=[...new Set(S.tx.map(t=>t.d.slice(0,7)))].sort();if(!months.length){ctx.fillStyle='#91a49a';ctx.font='18px sans-serif';ctx.fillText('Belum ada data transaksi',18,120);return}let vals=months.map(m=>S.tx.filter(t=>t.d.slice(0,7)<=m).reduce((s,t)=>s+t.v,0)),max=Math.max(...vals,1);ctx.strokeStyle='#21c77a';ctx.lineWidth=5;ctx.beginPath();vals.forEach((v,i)=>{let x=25+i*(550/Math.max(1,vals.length-1)),y=220-v/max*185;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle='#d9b45b';vals.forEach((v,i)=>{let x=25+i*(550/Math.max(1,vals.length-1)),y=220-v/max*185;ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill()});ctx.fillStyle='#91a49a';ctx.font='13px sans-serif';ctx.fillText(months[0],20,250);ctx.textAlign='right';ctx.fillText(months.at(-1),580,250);ctx.textAlign='left'}
+window.delTx=id=>{if(confirm('Hapus transaksi ini?')){S.tx=S.tx.filter(t=>t.id!==id);save();render()}};
+$('date').value=new Date().toISOString().slice(0,10);$('month').value=new Date().toISOString().slice(0,7);$('month').onchange=report;
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.page));if(b.dataset.page==='report')report()});
+function preview(){let q=n($('amount').value),p=n($('unitPrice').value);$('preview').textContent=p?(q/p).toLocaleString('id-ID',{maximumFractionDigits:10})+' unit':'0'}
+$('amount').oninput=preview;$('unitPrice').oninput=preview;
+$('add').onclick=()=>{let a=$('asset').value,v=n($('amount').value),p=n($('unitPrice').value),d=$('date').value;if(!d||v<=0||p<=0)return alert('Lengkapi tanggal, nominal dan harga beli.');S.tx.push({id:Date.now().toString(),a,v,p,u:v/p,d});save();$('amount').value='';$('unitPrice').value='';preview();render();alert('Transaksi tersimpan.')};
+$('saveTarget').onclick=()=>{let v=n($('targetInput').value);if(v<=0)return alert('Target harus lebih dari nol.');S.target=v;save();render()};
+$('savePrices').onclick=()=>{document.querySelectorAll('[data-price]').forEach(i=>S.prices[i.dataset.price]=n(i.value));save();render();alert('Harga pasar diperbarui.')};
+function dl(name,data,type){let u=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
+$('backup').onclick=()=>dl('invest-tracker-backup.json',JSON.stringify(S,null,2),'application/json');
+$('csv').onclick=()=>{let rows=[['Tanggal','Aset','Modal_Rp','Harga_per_unit_Rp','Unit'],...S.tx.map(t=>[t.d,t.a,t.v,t.p,t.u])];dl('invest-tracker-laporan.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv')};
+$('restore').onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(!Array.isArray(x.tx))throw 0;S=x;save();render();alert('Cadangan dipulihkan.')}catch(err){alert('File cadangan tidak valid.')}e.target.value=''};
+$('clear').onclick=()=>{if(confirm('Hapus semua data? Cadangkan data lebih dulu.')){S={target:3500000,prices:{BTC:0,VRT:0,KO:0,RDPU:0},tx:[]};save();render()}};
+render();
+</script></body></html>
